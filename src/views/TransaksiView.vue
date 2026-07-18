@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-background px-4 py-6 text-slate-900 md:px-8">
+  <div class="min-h-screen bg-background px-4 py-6 pb-28 text-slate-900 md:px-8">
     <div class="mx-auto max-w-5xl">
       <div class="mb-4 flex items-center justify-between">
         <div>
@@ -66,10 +66,12 @@
         </section>
       </div>
     </div>
+    <BottomNav />
   </div>
 </template>
 
 <script setup>
+import BottomNav from '../components/BottomNav.vue'
 import { ref } from 'vue'
 import { submitSetoran } from '../services/api'
 
