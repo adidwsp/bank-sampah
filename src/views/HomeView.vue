@@ -37,7 +37,7 @@
           <p class="text-sm uppercase tracking-wide text-white/80 mb-4">Saldo Poin</p>
 
           <div class="flex items-end gap-2">
-            <p class="text-6xl font-bold leading-none">5.150</p>
+            <p class="text-6xl font-bold leading-none">{{ dashboardData.total_poin || 0 }}</p>
             <span class="text-lg font-semibold mb-2">Poin</span>
           </div>
 
@@ -57,7 +57,7 @@
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm uppercase tracking-wide text-gray-500 mb-3">Nilai Saldo</p>
-            <p class="text-3xl font-bold text-slate-900">Rp 2.350.000</p>
+            <p class="text-3xl font-bold text-slate-900">Rp {{ formatCurrency(dashboardData.saldo_kas || 0) }}</p>
           </div>
 
           <div class="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center text-3xl">
@@ -84,7 +84,7 @@
 
           <div class="flex items-end justify-between mt-6">
             <div>
-              <p class="text-3xl font-bold">18</p>
+              <p class="text-3xl font-bold">{{ dashboardData.total_setoran_kg || 0 }}</p>
               <p class="text-sm text-gray-500 mt-1">
                 Setoran & penjualan tercatat
               </p>
@@ -104,7 +104,7 @@
 
           <div class="flex items-end justify-between mt-6">
             <div>
-              <p class="text-3xl font-bold">126</p>
+              <p class="text-3xl font-bold">{{ dashboardData.total_warga || 0 }}</p>
               <p class="text-sm text-gray-500 mt-1">Warga terdaftar</p>
             </div>
             <span class="text-3xl text-gray-500">›</span>
@@ -164,12 +164,39 @@
 </template>
 
 <script>
+import { onMounted, ref } from 'vue'
 import BottomNav from '../components/BottomNav.vue'
+import { getDashboardData } from '../services/api'
 
 export default {
   name: 'BankSampahDashboard',
   components: {
     BottomNav
+  },
+  setup() {
+    const dashboardData = ref({})
+
+    async function loadDashboard() {
+      try {
+        const response = await getDashboardData()
+        dashboardData.value = response?.data || {}
+      } catch (error) {
+        console.error('Gagal memuat dashboard', error)
+      }
+    }
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('id-ID').format(value)
+    }
+
+    onMounted(() => {
+      loadDashboard()
+    })
+
+    return {
+      dashboardData,
+      formatCurrency
+    }
   }
 }
 </script>

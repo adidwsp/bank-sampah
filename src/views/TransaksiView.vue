@@ -94,7 +94,13 @@ async function submitTransaction() {
   }
 
   try {
-    await submitSetoran({ namaWarga: namaWarga.value, rt: rt.value, items: items.value })
+    await submitSetoran({
+      username: 'budi',
+      items: items.value.map((item) => ({
+        kode: item.kategori,
+        berat: Number(item.berat)
+      }))
+    })
     alert('Transaksi setoran berhasil disimpan.')
   } catch (error) {
     alert('Gagal mengirim data. Periksa endpoint API.')

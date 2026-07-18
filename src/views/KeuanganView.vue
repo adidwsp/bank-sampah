@@ -65,7 +65,7 @@ async function submitKeuangan() {
   }
 
   try {
-    await submitBiaya({ jenis: jenis.value, nominal: nominal.value })
+    await submitBiaya({ nominal: nominal.value, keterangan: jenis.value })
     alert('Catatan keuangan berhasil dikirim.')
   } catch (error) {
     alert('Gagal mengirim data keuangan.')

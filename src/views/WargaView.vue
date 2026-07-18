@@ -12,8 +12,8 @@
       <div class="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
         <section class="rounded-3xl bg-primary p-5 text-white shadow-sm">
           <p class="text-sm text-slate-200">Total Poin</p>
-          <p class="mt-2 text-4xl font-semibold">{{ warga?.poin || 0 }}</p>
-          <p class="mt-4 text-sm text-slate-200">Estimasi nilai rupiah: Rp {{ warga?.estimasiRupiah || 0 }}</p>
+          <p class="mt-2 text-4xl font-semibold">{{ warga?.poin ?? 0 }}</p>
+          <p class="mt-4 text-sm text-slate-200">Estimasi nilai rupiah: Rp {{ warga?.total_nilai_rupiah ?? 0 }}</p>
         </section>
 
         <section class="rounded-3xl bg-white p-5 shadow-sm">
@@ -36,7 +36,7 @@
 
       <section class="mt-4 rounded-3xl bg-white p-5 shadow-sm">
         <h2 class="text-lg font-semibold">Riwayat Setoran</h2>
-        <div v-if="warga?.riwayat?.length" class="mt-4 space-y-3">
+        <div v-if="Array.isArray(warga?.riwayat) && warga.riwayat.length" class="mt-4 space-y-3">
           <div v-for="(item, index) in warga.riwayat" :key="index" class="rounded-2xl border border-slate-200 p-4">
             <div class="flex items-center justify-between">
               <p class="font-semibold text-slate-900">{{ item.keterangan }}</p>
@@ -55,7 +55,7 @@
 <script setup>
 import BottomNav from '../components/BottomNav.vue'
 import { ref } from 'vue'
-import { getWargaData } from '../services/api'
+import { loginWarga } from '../services/api'
 
 const username = ref('')
 const nomorHp = ref('')
@@ -68,8 +68,12 @@ async function loadWargaData() {
   }
 
   try {
-    const result = await getWargaData(username.value, nomorHp.value)
-    warga.value = result
+    const result = await loginWarga({ username: username.value, no_hp: nomorHp.value })
+    const payload = result?.data || result
+    warga.value = {
+      ...payload,
+      riwayat: Array.isArray(payload?.riwayat) ? payload.riwayat : []
+    }
   } catch (error) {
     alert('Gagal mengambil data warga.')
   }
