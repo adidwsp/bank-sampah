@@ -9,7 +9,7 @@ describe('api service', () => {
   it('mengirimkan request dashboard dengan method GET', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ success: true, data: { total_warga: 12 } })
+      text: async () => JSON.stringify({ success: true, data: { total_warga: 12 } })
     })
 
     const result = await getDashboardData()
@@ -24,7 +24,7 @@ describe('api service', () => {
   it('mengirimkan payload setoran lewat method POST', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ success: true, data: { id_setoran: 'STR-1' } })
+      text: async () => JSON.stringify({ success: true, data: { id_setoran: 'STR-1' } })
     })
 
     const result = await submitSetoran({
@@ -35,25 +35,31 @@ describe('api service', () => {
     expect(fetch).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
-        method: 'POST',
-        body: expect.stringContaining('simpan_setoran')
+        method: 'POST'
       })
     )
+
+    const [, options] = vi.mocked(fetch).mock.calls[0]
+    expect(options.body).toContain('simpan_setoran')
     expect(result.data.id_setoran).toBe('STR-1')
   })
 
-  it('mengirimkan username dan nomor HP untuk login warga', async () => {
+  it('mengirimkan username dan nomor HP untuk login warga lewat POST', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ success: true, data: { nama: 'Budi' } })
+      text: async () => JSON.stringify({ success: true, data: { nama: 'Budi' } })
     })
 
     const result = await loginWarga({ username: 'budi', no_hp: '08123456789' })
 
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('action=login_warga'),
-      expect.objectContaining({ method: 'GET' })
+      expect.any(String),
+      expect.objectContaining({ method: 'POST' })
     )
+
+    const [, options] = vi.mocked(fetch).mock.calls[0]
+    expect(options.body).toContain('login_warga')
+    expect(options.body).toContain('08123456789')
     expect(result.data.nama).toBe('Budi')
   })
 })

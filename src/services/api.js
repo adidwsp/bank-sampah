@@ -1,6 +1,6 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  'https://script.google.com/macros/s/AKfycbw13u-bnwmrVeFIpdLHAtbOXnlBIg5_qwX-9KmnZ5lBTWQJA2YeltT7c8xFz7B6B3k_/exec'
+  (import.meta.env.DEV ? '/api' : 'https://script.google.com/macros/s/AKfycbw13u-bnwmrVeFIpdLHAtbOXnlBIg5_qwX-9KmnZ5lBTWQJA2YeltT7c8xFz7B6B3k_/exec')
 
 async function request({
   method = 'GET',
@@ -13,7 +13,13 @@ async function request({
   }
 
   const metode = String(method).toUpperCase()
-  const url = new URL(API_BASE_URL)
+  const baseUrl = /^https?:\/\//.test(API_BASE_URL)
+    ? new URL(API_BASE_URL)
+    : new URL(
+        API_BASE_URL,
+        typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+      )
+  const url = baseUrl
 
   url.searchParams.set('action', action)
 
@@ -32,11 +38,29 @@ async function request({
   }
 
   if (metode === 'POST') {
-    options.headers = {
-      'Content-Type': 'text/plain;charset=utf-8'
+    let payload = body
+
+    if (payload === null || payload === undefined) {
+      payload = {}
     }
 
-    options.body = JSON.stringify(body || {})
+    if (typeof payload === 'object' && !Array.isArray(payload)) {
+      payload = {
+        ...payload,
+        action
+      }
+    } else {
+      payload = {
+        action,
+        value: payload
+      }
+    }
+
+    options.headers = {
+      'Content-Type': 'application/json;charset=utf-8'
+    }
+
+    options.body = JSON.stringify(payload)
   }
 
   let response
@@ -45,16 +69,36 @@ async function request({
     response = await fetch(url.toString(), options)
   } catch (error) {
     console.error('Kesalahan jaringan:', error)
+    console.error('URL yang dipanggil:', url.toString())
+    console.error('Opsi request:', options)
 
-    throw new Error('Tidak dapat terhubung ke server')
+    throw new Error(
+      error?.message || 'Tidak dapat terhubung ke server. Periksa koneksi atau URL API.'
+    )
   }
 
-  const teksRespons = await response.text()
-
   if (!response.ok) {
+    const errorText = await response.text().catch(() => '')
+    console.error('Respons gagal:', response.status, errorText)
     throw new Error(
       `Permintaan API gagal dengan status ${response.status}`
     )
+  }
+
+  let teksRespons = ''
+
+  try {
+    teksRespons = await response.text()
+  } catch (error) {
+    console.error('Tidak dapat membaca respons teks:', error)
+  }
+
+  if (!teksRespons) {
+    try {
+      return await response.json()
+    } catch (error) {
+      return {}
+    }
   }
 
   let hasil
