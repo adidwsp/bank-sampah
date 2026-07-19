@@ -11,8 +11,15 @@ const routes = [
   { path: '/dashboard', name: 'dashboard', component: HomeView },
   { path: '/warga', name: 'warga', component: WargaView },
   { path: '/transaksi', name: 'transaksi', component: TransaksiView },
-  { path: '/keuangan', name: 'keuangan', component: KeuanganView }
+  { path: '/keuangan', name: 'keuangan', component: KeuanganView },
+  {
+  path: '/uji-api',
+  name: 'uji-api',
+  component: () =>
+    import('../views/TestApiView.vue')
+}
 ]
+
 
 const router = createRouter({
   history: createWebHistory(),
